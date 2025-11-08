@@ -1,4 +1,5 @@
 import logo from "@/assets/logo.png";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface HeaderProps {
   activeView: string;
@@ -7,6 +8,24 @@ interface HeaderProps {
 }
 
 export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const handleNavigation = (id: string) => {
+    if (id === "apresentacao") {
+      navigate("/apresentacao");
+    } else {
+      navigate("/");
+      onNavigate(id);
+    }
+  };
+  
+  const getCurrentView = () => {
+    if (location.pathname === "/apresentacao") {
+      return "apresentacao";
+    }
+    return activeView;
+  };
   const navItems = [
     { id: "inscricoes", label: "Inscrições", icon: "📝" },
     { id: "apresentacao", label: "Apresentação", icon: "🎭" },
@@ -20,7 +39,10 @@ export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <button 
-            onClick={() => onNavigate("home")}
+            onClick={() => {
+              navigate("/");
+              onNavigate("home");
+            }}
             className="flex items-center gap-3 group"
           >
             <img
@@ -42,9 +64,9 @@ export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
             {navItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => onNavigate(item.id)}
+                onClick={() => handleNavigation(item.id)}
                 className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
-                  activeView === item.id
+                  getCurrentView() === item.id
                     ? "bg-gradient-to-r from-primary to-accent text-primary-foreground border-primary shadow-lg shadow-primary/25"
                     : "border-border hover:border-primary hover:bg-muted"
                 }`}

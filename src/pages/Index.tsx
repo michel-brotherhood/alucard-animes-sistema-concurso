@@ -7,7 +7,7 @@ import { Inscricoes } from "@/components/cosplay/Inscricoes";
 import { Avaliacao } from "@/components/cosplay/Avaliacao";
 import { Ranking } from "@/components/cosplay/Ranking";
 import { Kpop } from "@/components/cosplay/Kpop";
-import { Apresentacao } from "@/components/cosplay/Apresentacao";
+
 import { exportPdfApresentacao } from "@/lib/pdf-utils";
 import logo from "@/assets/logo.png";
 
@@ -54,14 +54,6 @@ const Index = () => {
             notas={notas}
             loading={loading}
             onSetNota={setNota}
-          />
-        );
-      case "apresentacao":
-        return (
-          <Apresentacao 
-            inscritos={inscritos}
-            notas={notas}
-            loading={loading}
           />
         );
       default:
