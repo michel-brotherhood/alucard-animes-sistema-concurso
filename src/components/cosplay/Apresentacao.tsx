@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { Inscrito, Nota, DEFAULT_JURORS } from "@/lib/cosplay-types";
 import { exportPdfApresentacao } from "@/lib/pdf-utils";
+import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
 
 interface ApresentacaoProps {
@@ -23,8 +24,37 @@ const PRESENTATION_ORDER = [
 ] as const;
 
 export function Apresentacao({ inscritos, notas, loading }: ApresentacaoProps) {
-  const handleExportPdf = () => {
-    exportPdfApresentacao(inscritos, logo);
+  const { toast } = useToast();
+
+  const handleExportPdf = async () => {
+    if (!inscritos.length) {
+      toast({
+        title: "Sem participantes",
+        description: "Não há participantes cadastrados para exportar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Gerando PDF...",
+      description: "Aguarde enquanto o PDF é gerado.",
+    });
+
+    const success = await exportPdfApresentacao(inscritos, logo);
+    
+    if (success) {
+      toast({
+        title: "PDF exportado!",
+        description: "O arquivo foi baixado com sucesso.",
+      });
+    } else {
+      toast({
+        title: "Erro ao exportar",
+        description: "Ocorreu um erro ao gerar o PDF. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Organizar inscritos por categoria na ordem especificada
@@ -47,17 +77,17 @@ export function Apresentacao({ inscritos, notas, loading }: ApresentacaoProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Apresentação dos Cosplayers
           </h2>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-muted-foreground text-sm sm:text-base mt-1">
             Ordem de apresentação organizada por categoria
           </p>
         </div>
-        <Button onClick={handleExportPdf} className="gap-2">
+        <Button onClick={handleExportPdf} className="gap-2 w-full sm:w-auto">
           <Download className="h-4 w-4" />
           Exportar PDF
         </Button>
@@ -65,24 +95,24 @@ export function Apresentacao({ inscritos, notas, loading }: ApresentacaoProps) {
 
       {/* Card com informações dos jurados */}
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span className="text-2xl">⭐</span>
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <span className="text-xl sm:text-2xl">⭐</span>
             Jurados Avaliadores
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {DEFAULT_JURORS.map((juror, index) => (
               <div
                 key={index}
-                className="flex items-center gap-3 p-4 rounded-lg bg-background border border-border"
+                className="flex items-center gap-3 p-3 sm:p-4 rounded-lg bg-background border border-border"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">
+                <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-sm sm:text-base">
                   {index + 1}
                 </div>
-                <div>
-                  <p className="font-semibold">{juror}</p>
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm sm:text-base truncate">{juror}</p>
                   <p className="text-xs text-muted-foreground">Avaliador</p>
                 </div>
               </div>
@@ -159,25 +189,25 @@ export function Apresentacao({ inscritos, notas, loading }: ApresentacaoProps) {
 
       {/* Estatísticas finais */}
       <Card className="border-accent/20 bg-gradient-to-br from-accent/5 to-primary/5">
-        <CardContent className="py-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+        <CardContent className="py-4 sm:py-6">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
             <div>
-              <p className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 {inscritos.length}
               </p>
-              <p className="text-sm text-muted-foreground">Total de Participantes</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Participantes</p>
             </div>
             <div>
-              <p className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 {organizedByCategory.length}
               </p>
-              <p className="text-sm text-muted-foreground">Categorias Ativas</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Categorias</p>
             </div>
             <div>
-              <p className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 {DEFAULT_JURORS.length}
               </p>
-              <p className="text-sm text-muted-foreground">Jurados</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Jurados</p>
             </div>
           </div>
         </CardContent>
