@@ -1,5 +1,7 @@
 import logo from "@/assets/logo.png";
 import { useNavigate, useLocation } from "react-router-dom";
+import { FileDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
   activeView: string;
@@ -28,6 +30,9 @@ export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
     }
     return activeView;
   };
+
+  const isApresentacaoPage = location.pathname === "/apresentacao";
+
   const navItems = [
     { id: "inscricoes", label: "Inscrições", icon: "📝" },
     { id: "apresentacao", label: "Apresentação", icon: "🎭" },
@@ -64,6 +69,17 @@ export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
           </button>
 
           <nav className="flex flex-wrap items-center gap-2">
+            {isApresentacaoPage && (
+              <Button
+                onClick={onExportPdf}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <FileDown className="h-4 w-4" />
+                <span className="hidden sm:inline">Exportar PDF</span>
+              </Button>
+            )}
             {navItems.map((item) => (
               <button
                 key={item.id}
