@@ -14,6 +14,8 @@ export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
   const handleNavigation = (id: string) => {
     if (id === "apresentacao") {
       navigate("/apresentacao");
+    } else if (id === "admin") {
+      navigate("/admin");
     } else {
       navigate("/");
       onNavigate(id);
@@ -32,6 +34,7 @@ export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
     { id: "ranking", label: "Ranking", icon: "🏆" },
     { id: "avaliacao", label: "Jurados", icon: "⭐" },
     { id: "kpop", label: "K-pop", icon: "🎵" },
+    { id: "admin", label: "Admin", icon: "🔐" },
   ];
 
   return (
