@@ -4,60 +4,76 @@ import type { Inscrito, Nota, RankingItem } from "./cosplay-types";
 import { byOrder, groupSmallCategories, shouldShowInDashboard, getJurorScores, median, desvio } from "./cosplay-utils";
 import { CATEGORIES, CATEGORIES_WITHOUT_SCORES } from "./cosplay-types";
 
-export async function exportPdfApresentacao(inscritos: Inscrito[], logoUrl: string) {
-  const doc = new jsPDF();
-  
-  const filteredInscritos = inscritos.filter(it => shouldShowInDashboard(it.categoria));
-  const groupedInscritos = groupSmallCategories(filteredInscritos);
-  const sortedInscritos = [...groupedInscritos].sort(byOrder);
+export async function exportPdfApresentacao(inscritos: Inscrito[], logoUrl: string): Promise<boolean> {
+  try {
+    const doc = new jsPDF();
+    
+    // Usa categorias originais sem agrupamento para PDF de apresentação
+    const sortedInscritos = [...inscritos].sort(byOrder);
 
-  if (!sortedInscritos.length) {
-    alert("Nenhum participante para exportar");
-    return;
-  }
-
-  // Add logo
-  const img = new Image();
-  img.src = logoUrl;
-  await new Promise((resolve) => {
-    img.onload = resolve;
-  });
-  doc.addImage(img, 'PNG', 10, 10, 30, 30);
-
-  // Title
-  doc.setFontSize(20);
-  doc.text("Concurso de Cosplay - Lista de Apresentação", 45, 25);
-
-  // Table data
-  const tableData: any[] = [];
-  let idx = 1;
-  let lastCat: string | null = null;
-
-  for (const it of sortedInscritos) {
-    if (it.categoria !== lastCat) {
-      lastCat = it.categoria;
-      tableData.push([
-        {
-          content: lastCat,
-          colSpan: 3,
-          styles: { fontStyle: 'bold', fillColor: [255, 215, 0] }
-        }
-      ]);
+    if (!sortedInscritos.length) {
+      console.warn("PDF Export: Nenhum participante para exportar");
+      return false;
     }
-    tableData.push([idx++, it.nome, it.cosplay]);
+
+    // Add logo with error handling
+    try {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = logoUrl;
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        setTimeout(reject, 5000); // timeout de 5 segundos
+      });
+      doc.addImage(img, 'PNG', 10, 10, 30, 30);
+    } catch (logoError) {
+      console.warn("PDF Export: Logo não carregou, continuando sem logo", logoError);
+    }
+
+    // Title
+    doc.setFontSize(20);
+    doc.text("Concurso de Cosplay - Lista de Apresentação", 45, 25);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 45, 32);
+    doc.setTextColor(0);
+
+    // Table data - organiza por categoria original
+    const tableData: any[] = [];
+    let idx = 1;
+    let lastCat: string | null = null;
+
+    for (const it of sortedInscritos) {
+      if (it.categoria !== lastCat) {
+        lastCat = it.categoria;
+        tableData.push([
+          {
+            content: lastCat,
+            colSpan: 3,
+            styles: { fontStyle: 'bold', fillColor: [255, 215, 0], textColor: [0, 0, 0] }
+          }
+        ]);
+      }
+      tableData.push([idx++, it.nome, it.cosplay]);
+    }
+
+    // Generate table
+    (doc as any).autoTable({
+      head: [['#', 'Nome', 'Personagem/Cosplay']],
+      body: tableData,
+      startY: 50,
+      theme: 'grid',
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [255, 215, 0], textColor: [0, 0, 0] }
+    });
+
+    doc.save('apresentacao-cosplay.pdf');
+    return true;
+  } catch (error) {
+    console.error("PDF Export Error:", error);
+    return false;
   }
-
-  // Generate table
-  (doc as any).autoTable({
-    head: [['#', 'Nome', 'Personagem/Cosplay']],
-    body: tableData,
-    startY: 50,
-    theme: 'grid',
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: [255, 215, 0] }
-  });
-
-  doc.save('apresentacao-cosplay.pdf');
 }
 
 export async function exportRankingPdf(inscritos: Inscrito[], notas: Record<string, Nota>, logoUrl: string) {

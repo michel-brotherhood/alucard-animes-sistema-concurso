@@ -3,13 +3,42 @@ import { Header } from "@/components/cosplay/Header";
 import { Footer } from "@/components/cosplay/Footer";
 import { Apresentacao as ApresentacaoComponent } from "@/components/cosplay/Apresentacao";
 import { exportPdfApresentacao } from "@/lib/pdf-utils";
+import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
 
 const Apresentacao = () => {
   const { inscritos, notas, loading } = useCosplayData();
+  const { toast } = useToast();
 
-  const handleExportPdf = () => {
-    exportPdfApresentacao(inscritos, logo);
+  const handleExportPdf = async () => {
+    if (!inscritos.length) {
+      toast({
+        title: "Sem participantes",
+        description: "Não há participantes cadastrados para exportar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Gerando PDF...",
+      description: "Aguarde enquanto o PDF é gerado.",
+    });
+
+    const success = await exportPdfApresentacao(inscritos, logo);
+    
+    if (success) {
+      toast({
+        title: "PDF exportado!",
+        description: "O arquivo foi baixado com sucesso.",
+      });
+    } else {
+      toast({
+        title: "Erro ao exportar",
+        description: "Ocorreu um erro ao gerar o PDF. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
