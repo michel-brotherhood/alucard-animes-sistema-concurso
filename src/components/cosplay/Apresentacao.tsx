@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { Inscrito, Nota, DEFAULT_JURORS } from "@/lib/cosplay-types";
+import { Inscrito, Nota, DEFAULT_JURORS, CATEGORIES, KPOP_CATEGORIES } from "@/lib/cosplay-types";
 import { exportPdfApresentacao } from "@/lib/pdf-utils";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
@@ -13,15 +13,10 @@ interface ApresentacaoProps {
   loading: boolean;
 }
 
-const PRESENTATION_ORDER = [
-  "COSPOBRE",
-  "INFANTIL",
-  "GAME",
-  "GEEK",
-  "ANIME",
-  "DESFILE LIVRE",
-  "APRESENTAÇÃO SOLO OU GRUPO"
-] as const;
+// Filtrar categorias para apresentação (excluir ANIMEKÊ e K-POP)
+const PRESENTATION_CATEGORIES = CATEGORIES.filter(
+  cat => cat !== "ANIMEKÊ" && !KPOP_CATEGORIES.includes(cat as any)
+);
 
 export function Apresentacao({ inscritos, notas, loading }: ApresentacaoProps) {
   const { toast } = useToast();
@@ -58,7 +53,7 @@ export function Apresentacao({ inscritos, notas, loading }: ApresentacaoProps) {
   };
 
   // Organizar inscritos por categoria na ordem especificada
-  const organizedByCategory = PRESENTATION_ORDER.map(categoria => ({
+  const organizedByCategory = PRESENTATION_CATEGORIES.map(categoria => ({
     categoria,
     participantes: inscritos
       .filter(p => p.categoria === categoria)
