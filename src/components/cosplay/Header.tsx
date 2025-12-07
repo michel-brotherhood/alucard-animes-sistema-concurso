@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 interface HeaderProps {
   activeView: string;
   onNavigate: (view: string) => void;
-  onExportPdf: () => void;
+  onExportPdf?: () => void;
 }
 
 export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
@@ -20,18 +20,30 @@ export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
     setMobileMenuOpen(false);
     if (id === "apresentacao") {
       navigate("/apresentacao");
-    } else if (id === "admin") {
-      navigate("/admin");
-    } else {
-      navigate("/");
-      onNavigate(id);
+      return;
     }
+    if (id === "avaliacao") {
+      navigate("/avaliacao");
+      return;
+    }
+    if (id === "ranking") {
+      navigate("/ranking");
+      return;
+    }
+    if (id === "admin") {
+      navigate("/admin");
+      return;
+    }
+    if (location.pathname !== "/") {
+      navigate("/");
+    }
+    onNavigate(id);
   };
   
   const getCurrentView = () => {
-    if (location.pathname === "/apresentacao") {
-      return "apresentacao";
-    }
+    if (location.pathname === "/apresentacao") return "apresentacao";
+    if (location.pathname === "/avaliacao") return "avaliacao";
+    if (location.pathname === "/ranking") return "ranking";
     return activeView;
   };
 
@@ -89,7 +101,7 @@ export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-2">
-            {isApresentacaoPage && (
+            {isApresentacaoPage && onExportPdf && (
               <Button
                 onClick={onExportPdf}
                 variant="outline"
@@ -107,7 +119,7 @@ export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
 
           {/* Mobile Menu */}
           <div className="flex lg:hidden items-center gap-2">
-            {isApresentacaoPage && (
+            {isApresentacaoPage && onExportPdf && (
               <Button
                 onClick={onExportPdf}
                 variant="outline"

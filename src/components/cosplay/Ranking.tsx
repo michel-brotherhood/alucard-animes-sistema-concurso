@@ -94,30 +94,34 @@ export function Ranking({ inscritos, notas, loading }: RankingProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <h2 className="text-2xl font-bold text-primary flex items-center gap-2">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-primary flex items-center gap-2">
           <span>🏆</span>
           <span>Rankings por Categoria</span>
         </h2>
         
         {allRankings.length > 0 && (
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2">
             <Button
               onClick={handleExportPDF}
               variant="outline"
+              size="sm"
               className="gap-2"
             >
               <FileDown className="h-4 w-4" />
-              <span>Exportar PDF</span>
+              <span className="hidden sm:inline">Exportar PDF</span>
+              <span className="sm:hidden">PDF</span>
             </Button>
             <Button
               onClick={handleExportExcel}
               variant="outline"
+              size="sm"
               className="gap-2"
             >
               <FileSpreadsheet className="h-4 w-4" />
-              <span>Exportar Excel</span>
+              <span className="hidden sm:inline">Exportar Excel</span>
+              <span className="sm:hidden">Excel</span>
             </Button>
           </div>
         )}
@@ -152,43 +156,43 @@ export function Ranking({ inscritos, notas, loading }: RankingProps) {
           .slice(0, 3);
 
         return (
-          <Card key={cat} className="p-6 border-border bg-card animate-fade-in-up">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-secondary">{cat}</h3>
-              <span className="text-sm text-muted-foreground">
+          <Card key={cat} className="p-4 sm:p-6 border-border bg-card animate-fade-in-up">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-lg sm:text-xl font-bold text-secondary">{cat}</h3>
+              <span className="text-xs sm:text-sm text-muted-foreground">
                 {items.length} classificado{items.length !== 1 ? "s" : ""}
               </span>
             </div>
 
             {!items.length ? (
-              <div className="text-center py-8">
-                <div className="text-4xl mb-2">📊</div>
-                <p className="text-muted-foreground italic">
+              <div className="text-center py-6 sm:py-8">
+                <div className="text-3xl sm:text-4xl mb-2">📊</div>
+                <p className="text-muted-foreground italic text-sm sm:text-base">
                   Sem avaliações suficientes para ranking
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {items.map((x, i) => {
                   const pos = i + 1;
                   return (
                     <div
                       key={x.it.id}
-                      className="flex items-center justify-between p-4 bg-background border border-border rounded-lg hover:border-primary transition-all animate-slide-in"
+                      className="flex items-center justify-between p-3 sm:p-4 bg-background border border-border rounded-lg hover:border-primary transition-all animate-slide-in gap-3"
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
                         <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold shadow-lg ${getMedalClass(pos)}`}
+                          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-base sm:text-lg font-bold shadow-lg flex-shrink-0 ${getMedalClass(pos)}`}
                         >
                           {pos}
                         </div>
-                        <div>
-                          <div className="font-semibold">{x.it.nome}</div>
-                          <div className="text-sm text-muted-foreground">{x.it.cosplay}</div>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-sm sm:text-base truncate">{x.it.nome}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground truncate">{x.it.cosplay}</div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-primary">
+                      <div className="text-right flex-shrink-0">
+                        <div className="text-xl sm:text-2xl font-bold text-primary">
                           {x.media.toFixed(2)}
                         </div>
                         <div className="text-xs text-muted-foreground">média</div>
