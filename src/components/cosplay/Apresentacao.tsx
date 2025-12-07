@@ -93,34 +93,6 @@ export function Apresentacao({ inscritos, notas, loading }: ApresentacaoProps) {
         </Button>
       </div>
 
-      {/* Card com informações dos jurados */}
-      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
-        <CardHeader className="pb-3 sm:pb-6">
-          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            <span className="text-xl sm:text-2xl">⭐</span>
-            Jurados Avaliadores
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            {DEFAULT_JURORS.map((juror, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 p-3 sm:p-4 rounded-lg bg-background border border-border"
-              >
-                <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-sm sm:text-base">
-                  {index + 1}
-                </div>
-                <div className="min-w-0">
-                  <p className="font-semibold text-sm sm:text-base truncate">{juror}</p>
-                  <p className="text-xs text-muted-foreground">Avaliador</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Lista de categorias e participantes */}
       {organizedByCategory.length === 0 ? (
         <Card>
