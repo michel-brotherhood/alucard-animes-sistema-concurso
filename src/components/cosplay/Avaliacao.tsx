@@ -18,18 +18,46 @@ interface AvaliacaoProps {
 export function Avaliacao({ inscritos, notas, loading, onSetNota }: AvaliacaoProps) {
   // Estado local para valores sendo editados (evita conflito com o banco)
   const [editingValues, setEditingValues] = useState<Record<string, Record<number, string>>>({});
+  // Rastreia qual input está em foco para ignorar atualizações do Realtime
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
   
   const filteredInscritos = inscritos.filter(it => shouldShowInAvaliacao(it.categoria));
   const groupedInscritos = groupSmallCategories(filteredInscritos);
   const sortedInscritos = [...groupedInscritos].sort(byOrder);
 
-  // Retorna o valor do input: se está editando, usa o local; senão, usa o do banco
+  // Retorna o valor do input: se está em foco, SEMPRE usa o local
   const getInputValue = (inscritoId: string, jurorIdx: number, nota: Nota): string => {
+    const inputKey = `${inscritoId}-${jurorIdx}`;
+    
+    // Se este input está em foco, usa SEMPRE o valor local (ignora Realtime)
+    if (focusedInput === inputKey) {
+      return editingValues[inscritoId]?.[jurorIdx] ?? "";
+    }
+    
+    // Se tem valor local salvo mas não está em foco, usa ele
     if (editingValues[inscritoId]?.[jurorIdx] !== undefined) {
       return editingValues[inscritoId][jurorIdx];
     }
+    
+    // Caso contrário, usa o valor do banco
     const dbValue = nota[`jurado_${jurorIdx + 1}` as keyof Nota];
     return dbValue !== null && dbValue !== undefined ? String(dbValue) : "";
+  };
+
+  // Quando o input recebe foco, inicializa o valor local
+  const handleInputFocus = (inscritoId: string, jurorIdx: number, nota: Nota) => {
+    const inputKey = `${inscritoId}-${jurorIdx}`;
+    setFocusedInput(inputKey);
+    
+    // Inicializa o valor local com o valor atual do banco
+    const currentValue = nota[`jurado_${jurorIdx + 1}` as keyof Nota];
+    setEditingValues(prev => ({
+      ...prev,
+      [inscritoId]: {
+        ...prev[inscritoId],
+        [jurorIdx]: currentValue !== null && currentValue !== undefined ? String(currentValue) : ""
+      }
+    }));
   };
 
   // Atualiza apenas o estado local enquanto digita
@@ -45,6 +73,9 @@ export function Avaliacao({ inscritos, notas, loading, onSetNota }: AvaliacaoPro
 
   // Salva no banco apenas quando sai do campo
   const handleInputBlur = async (inscritoId: string, jurorIdx: number) => {
+    // Limpa o foco primeiro
+    setFocusedInput(null);
+    
     const value = editingValues[inscritoId]?.[jurorIdx];
     if (value !== undefined) {
       await onSetNota(inscritoId, jurorIdx, value);
@@ -109,6 +140,7 @@ export function Avaliacao({ inscritos, notas, loading, onSetNota }: AvaliacaoPro
                 type="text"
                 inputMode="decimal"
                 value={getInputValue(inscrito.id, jurorIdx, nota)}
+                onFocus={() => handleInputFocus(inscrito.id, jurorIdx, nota)}
                 onChange={(e) => handleInputChange(inscrito.id, jurorIdx, e.target.value)}
                 onBlur={() => handleInputBlur(inscrito.id, jurorIdx)}
                 placeholder="0-10"
@@ -211,6 +243,7 @@ export function Avaliacao({ inscritos, notas, loading, onSetNota }: AvaliacaoPro
                                 type="text"
                                 inputMode="decimal"
                                 value={getInputValue(inscrito.id, jurorIdx, nota)}
+                                onFocus={() => handleInputFocus(inscrito.id, jurorIdx, nota)}
                                 onChange={(e) => handleInputChange(inscrito.id, jurorIdx, e.target.value)}
                                 onBlur={() => handleInputBlur(inscrito.id, jurorIdx)}
                                 placeholder="0-10"
