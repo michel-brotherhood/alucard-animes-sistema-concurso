@@ -58,15 +58,20 @@ export function shouldGroupIntoDesfileLivre(
   return count < 3;
 }
 
+// Mínimo de participantes para uma categoria aparecer separadamente
+export const MIN_PARTICIPANTS_PER_CATEGORY = 5;
+
 export function groupSmallCategories(inscritos: Inscrito[]): Inscrito[] {
-  const categoriasParaAgrupar = ["GEEK", "GAME", "ANIME"];
+  // Categorias que podem ser agrupadas em DESFILE LIVRE se tiverem < 5 participantes
+  const categoriasParaAgrupar = ["GEEK", "GAME", "ANIME", "APRESENTAÇÃO SOLO OU GRUPO"];
   const inscritosAgrupados: Inscrito[] = [];
   const inscritosDesfileLivre = inscritos.filter(p => p.categoria === "DESFILE LIVRE");
 
   for (const cat of CATEGORIES) {
     if (categoriasParaAgrupar.includes(cat)) {
       const participantesDaCategoria = inscritos.filter(p => p.categoria === cat);
-      if (participantesDaCategoria.length < 3) {
+      if (participantesDaCategoria.length < MIN_PARTICIPANTS_PER_CATEGORY) {
+        // Mover para DESFILE LIVRE
         inscritosDesfileLivre.push(
           ...participantesDaCategoria.map(p => ({ ...p, categoria: "DESFILE LIVRE" }))
         );

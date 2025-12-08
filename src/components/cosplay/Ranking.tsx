@@ -2,11 +2,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { Inscrito, Nota } from "@/lib/cosplay-types";
 import { CATEGORIES, CATEGORIES_WITHOUT_SCORES } from "@/lib/cosplay-types";
-import { byOrder, groupSmallCategories, shouldShowInAvaliacao, getJurorScores, median, desvio } from "@/lib/cosplay-utils";
+import { byOrder, groupSmallCategories, shouldShowInAvaliacao, getJurorScores, median, desvio, MIN_PARTICIPANTS_PER_CATEGORY } from "@/lib/cosplay-utils";
 import type { RankingItem } from "@/lib/cosplay-types";
 import { Loader2, FileDown, FileSpreadsheet } from "lucide-react";
 import { exportRankingToExcel } from "@/lib/excel-utils";
 import { generateRankingPDF } from "@/lib/pdf-utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface RankingProps {
   inscritos: Inscrito[];
@@ -15,6 +16,7 @@ interface RankingProps {
 }
 
 export function Ranking({ inscritos, notas, loading }: RankingProps) {
+  const { toast } = useToast();
   const filteredInscritos = inscritos.filter(it => shouldShowInAvaliacao(it.categoria));
   const groupedInscritos = groupSmallCategories(filteredInscritos);
   const sortedInscritos = [...groupedInscritos].sort(byOrder);
@@ -56,7 +58,7 @@ export function Ranking({ inscritos, notas, loading }: RankingProps) {
     if (CATEGORIES_WITHOUT_SCORES.includes(cat as any)) return;
     
     const itemsForCat = porCat[cat] || [];
-    if (cat !== "DESFILE LIVRE" && itemsForCat.length < 3) return;
+    if (cat !== "DESFILE LIVRE" && itemsForCat.length < MIN_PARTICIPANTS_PER_CATEGORY) return;
     if (!itemsForCat.length) return;
 
     const items: RankingItem[] = itemsForCat
@@ -90,7 +92,24 @@ export function Ranking({ inscritos, notas, loading }: RankingProps) {
   };
 
   const handleExportPDF = () => {
-    generateRankingPDF(allRankings);
+    try {
+      toast({
+        title: "Gerando PDF...",
+        description: "Aguarde enquanto o PDF é gerado.",
+      });
+      generateRankingPDF(allRankings);
+      toast({
+        title: "PDF exportado!",
+        description: "O arquivo foi baixado com sucesso.",
+      });
+    } catch (error) {
+      console.error("Erro ao exportar PDF:", error);
+      toast({
+        title: "Erro ao exportar",
+        description: "Ocorreu um erro ao gerar o PDF. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -131,7 +150,7 @@ export function Ranking({ inscritos, notas, loading }: RankingProps) {
         if (CATEGORIES_WITHOUT_SCORES.includes(cat as any)) return null;
         
         const itemsForCat = porCat[cat] || [];
-        if (cat !== "DESFILE LIVRE" && itemsForCat.length < 3) return null;
+        if (cat !== "DESFILE LIVRE" && itemsForCat.length < MIN_PARTICIPANTS_PER_CATEGORY) return null;
         if (!itemsForCat.length) return null;
 
         const items: RankingItem[] = itemsForCat

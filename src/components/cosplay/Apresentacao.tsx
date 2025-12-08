@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { Inscrito, Nota, DEFAULT_JURORS, CATEGORIES, KPOP_CATEGORIES } from "@/lib/cosplay-types";
+import { groupSmallCategories } from "@/lib/cosplay-utils";
 import { exportPdfApresentacao } from "@/lib/pdf-utils";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
@@ -52,10 +53,13 @@ export function Apresentacao({ inscritos, notas, loading }: ApresentacaoProps) {
     }
   };
 
+  // Aplicar a regra de agrupamento de categorias pequenas
+  const groupedInscritos = groupSmallCategories(inscritos);
+
   // Organizar inscritos por categoria na ordem especificada
   const organizedByCategory = PRESENTATION_CATEGORIES.map(categoria => ({
     categoria,
-    participantes: inscritos
+    participantes: groupedInscritos
       .filter(p => p.categoria === categoria)
       .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
   })).filter(group => group.participantes.length > 0);
