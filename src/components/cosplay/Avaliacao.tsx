@@ -1,9 +1,10 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Inscrito, Nota } from "@/lib/cosplay-types";
-import { DEFAULT_JURORS, CATEGORIES_WITHOUT_SCORES } from "@/lib/cosplay-types";
+import { CATEGORIES_WITHOUT_SCORES } from "@/lib/cosplay-types";
 import { byOrder, groupSmallCategories, shouldShowInAvaliacao, getJurorScores, calculateMedia } from "@/lib/cosplay-utils";
 import { Loader2 } from "lucide-react";
 
@@ -15,9 +16,51 @@ interface AvaliacaoProps {
 }
 
 export function Avaliacao({ inscritos, notas, loading, onSetNota }: AvaliacaoProps) {
+  // Estado local para valores sendo editados (evita conflito com o banco)
+  const [editingValues, setEditingValues] = useState<Record<string, Record<number, string>>>({});
+  
   const filteredInscritos = inscritos.filter(it => shouldShowInAvaliacao(it.categoria));
   const groupedInscritos = groupSmallCategories(filteredInscritos);
   const sortedInscritos = [...groupedInscritos].sort(byOrder);
+
+  // Retorna o valor do input: se está editando, usa o local; senão, usa o do banco
+  const getInputValue = (inscritoId: string, jurorIdx: number, nota: Nota): string => {
+    if (editingValues[inscritoId]?.[jurorIdx] !== undefined) {
+      return editingValues[inscritoId][jurorIdx];
+    }
+    const dbValue = nota[`jurado_${jurorIdx + 1}` as keyof Nota];
+    return dbValue !== null && dbValue !== undefined ? String(dbValue) : "";
+  };
+
+  // Atualiza apenas o estado local enquanto digita
+  const handleInputChange = (inscritoId: string, jurorIdx: number, value: string) => {
+    setEditingValues(prev => ({
+      ...prev,
+      [inscritoId]: {
+        ...prev[inscritoId],
+        [jurorIdx]: value
+      }
+    }));
+  };
+
+  // Salva no banco apenas quando sai do campo
+  const handleInputBlur = async (inscritoId: string, jurorIdx: number) => {
+    const value = editingValues[inscritoId]?.[jurorIdx];
+    if (value !== undefined) {
+      await onSetNota(inscritoId, jurorIdx, value);
+      // Limpar o valor local após salvar
+      setEditingValues(prev => {
+        const newValues = { ...prev };
+        if (newValues[inscritoId]) {
+          delete newValues[inscritoId][jurorIdx];
+          if (Object.keys(newValues[inscritoId]).length === 0) {
+            delete newValues[inscritoId];
+          }
+        }
+        return newValues;
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -63,12 +106,12 @@ export function Avaliacao({ inscritos, notas, loading, onSetNota }: AvaliacaoPro
             <div key={jurorIdx} className="space-y-1">
               <label className="text-xs text-muted-foreground">Jurado {jurorIdx + 1}</label>
               <Input
-                type="number"
-                min="0"
-                max="10"
-                step="0.5"
-                value={nota[`jurado_${jurorIdx + 1}` as keyof Nota] ?? ""}
-                onChange={(e) => onSetNota(inscrito.id, jurorIdx, e.target.value)}
+                type="text"
+                inputMode="decimal"
+                value={getInputValue(inscrito.id, jurorIdx, nota)}
+                onChange={(e) => handleInputChange(inscrito.id, jurorIdx, e.target.value)}
+                onBlur={() => handleInputBlur(inscrito.id, jurorIdx)}
+                placeholder="0-10"
                 className="h-10 text-center border-input bg-background"
               />
             </div>
@@ -165,13 +208,13 @@ export function Avaliacao({ inscritos, notas, loading, onSetNota }: AvaliacaoPro
                           {[0, 1, 2].map((jurorIdx) => (
                             <TableCell key={jurorIdx}>
                               <Input
-                                type="number"
-                                min="0"
-                                max="10"
-                                step="0.5"
-                                value={nota[`jurado_${jurorIdx + 1}` as keyof Nota] ?? ""}
-                                onChange={(e) => onSetNota(inscrito.id, jurorIdx, e.target.value)}
-                                className="w-20 border-input bg-background"
+                                type="text"
+                                inputMode="decimal"
+                                value={getInputValue(inscrito.id, jurorIdx, nota)}
+                                onChange={(e) => handleInputChange(inscrito.id, jurorIdx, e.target.value)}
+                                onBlur={() => handleInputBlur(inscrito.id, jurorIdx)}
+                                placeholder="0-10"
+                                className="w-20 border-input bg-background text-center"
                               />
                             </TableCell>
                           ))}
