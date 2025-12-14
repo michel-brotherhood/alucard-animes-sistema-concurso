@@ -13,7 +13,8 @@ export const byOrder = (a: Inscrito, b: Inscrito) => {
 export function clampNota(n: string | number | null | undefined): number | null {
   let x = parseFloat((n || "").toString().replace(",", "."));
   if (isNaN(x)) return null;
-  x = Math.round(x * 2) / 2;
+  // Arredondar para 2 casas decimais (permite 7.8, 7.25, etc.)
+  x = Math.round(x * 100) / 100;
   return Math.max(0, Math.min(10, x));
 }
 
