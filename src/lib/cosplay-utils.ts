@@ -68,10 +68,16 @@ export function groupSmallCategories(inscritos: Inscrito[]): Inscrito[] {
   const inscritosAgrupados: Inscrito[] = [];
   const inscritosDesfileLivre = inscritos.filter(p => p.categoria === "DESFILE LIVRE");
 
+  // Mínimo específico por categoria (APRESENTAÇÃO SOLO OU GRUPO precisa só de 4)
+  const minPorCategoria: Record<string, number> = {
+    "APRESENTAÇÃO SOLO OU GRUPO": 4,
+  };
+
   for (const cat of CATEGORIES) {
     if (categoriasParaAgrupar.includes(cat)) {
       const participantesDaCategoria = inscritos.filter(p => p.categoria === cat);
-      if (participantesDaCategoria.length < MIN_PARTICIPANTS_PER_CATEGORY) {
+      const minimo = minPorCategoria[cat] ?? MIN_PARTICIPANTS_PER_CATEGORY;
+      if (participantesDaCategoria.length < minimo) {
         // Mover para DESFILE LIVRE
         inscritosDesfileLivre.push(
           ...participantesDaCategoria.map(p => ({ ...p, categoria: "DESFILE LIVRE" }))
