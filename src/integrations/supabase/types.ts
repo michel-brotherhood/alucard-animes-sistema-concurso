@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_requests: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string
+          granted_role: Database["public"]["Enums"]["app_role"] | null
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email: string
+          granted_role?: Database["public"]["Enums"]["app_role"] | null
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          granted_role?: Database["public"]["Enums"]["app_role"] | null
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       inscritos: {
         Row: {
           categoria: string
@@ -120,12 +159,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_access_request: {
+        Args: {
+          _request_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      list_access_requests: {
+        Args: { _status?: string }
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          granted_role: Database["public"]["Enums"]["app_role"]
+          id: string
+          reviewed_at: string
+          status: string
+          user_id: string
+        }[]
       }
       list_users_with_roles: {
         Args: never
@@ -136,6 +195,17 @@ export type Database = {
           roles: Database["public"]["Enums"]["app_role"][]
           user_id: string
         }[]
+      }
+      my_access_request_status: {
+        Args: never
+        Returns: {
+          granted_role: Database["public"]["Enums"]["app_role"]
+          status: string
+        }[]
+      }
+      reject_access_request: {
+        Args: { _request_id: string }
+        Returns: undefined
       }
       set_user_role: {
         Args: {
