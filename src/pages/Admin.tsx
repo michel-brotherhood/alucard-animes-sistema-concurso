@@ -1,19 +1,23 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCosplayData } from "@/hooks/useCosplayData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { ParticipantesTable } from "@/components/admin/ParticipantesTable";
 import { NotasTable } from "@/components/admin/NotasTable";
 import { RolesTable } from "@/components/admin/RolesTable";
-import { LogOut, RefreshCw, Users, Star, Home, Loader2, Shield } from "lucide-react";
+import { AccessRequestsTable } from "@/components/admin/AccessRequestsTable";
+import { LogOut, RefreshCw, Users, Star, Home, Loader2, Shield, UserPlus } from "lucide-react";
 
 export default function Admin() {
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut } = useAuth();
   const { inscritos, notas, loading, refresh } = useCosplayData();
   const navigate = useNavigate();
+  const [pendingCount, setPendingCount] = useState(0);
 
   async function handleLogout() {
     await signOut();
@@ -30,7 +34,6 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border/50 bg-card/50 backdrop-blur sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div>
@@ -54,19 +57,25 @@ export default function Admin() {
         </div>
       </header>
 
-      {/* Content */}
       <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Stats */}
         <AdminStats inscritos={inscritos} notas={notas} />
 
-        {/* Tabs */}
         <Card className="border-border/50 bg-card/80">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Gerenciamento de Dados</CardTitle>
+            <CardTitle className="text-lg">Gerenciamento</CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="participantes" className="w-full">
-              <TabsList className="mb-4">
+            <Tabs defaultValue={pendingCount > 0 ? "pedidos" : "participantes"} className="w-full">
+              <TabsList className="mb-4 flex-wrap h-auto">
+                <TabsTrigger value="pedidos" className="gap-2 relative">
+                  <UserPlus className="h-4 w-4" />
+                  Pedidos
+                  {pendingCount > 0 && (
+                    <Badge variant="destructive" className="ml-1 h-5 min-w-5 px-1.5 text-xs">
+                      {pendingCount}
+                    </Badge>
+                  )}
+                </TabsTrigger>
                 <TabsTrigger value="participantes" className="gap-2">
                   <Users className="h-4 w-4" />
                   Participantes
@@ -80,15 +89,16 @@ export default function Admin() {
                   Usuários
                 </TabsTrigger>
               </TabsList>
-              
+
+              <TabsContent value="pedidos">
+                <AccessRequestsTable onCountChange={setPendingCount} />
+              </TabsContent>
               <TabsContent value="participantes">
                 <ParticipantesTable inscritos={inscritos} onRefresh={refresh} />
               </TabsContent>
-              
               <TabsContent value="notas">
                 <NotasTable inscritos={inscritos} notas={notas} onRefresh={refresh} />
               </TabsContent>
-
               <TabsContent value="usuarios">
                 <RolesTable />
               </TabsContent>

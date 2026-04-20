@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCosplayData } from "@/hooks/useCosplayData";
 import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/cosplay/Header";
@@ -15,7 +16,15 @@ import logo from "@/assets/logo.png";
 const Index = () => {
   const [activeView, setActiveView] = useState("home");
   const { inscritos, notas, loading, addInscrito, deleteInscrito, setNota } = useCosplayData();
-  const { isAdmin } = useAuth();
+  const { user, isAdmin, isJuror, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // Visitantes sem login só veem o ranking
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/ranking", { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   const handleExportPdf = () => {
     exportPdfApresentacao(inscritos, logo);
@@ -41,6 +50,14 @@ const Index = () => {
           />
         );
       case "avaliacao":
+        if (!isAdmin && !isJuror) {
+          return (
+            <div className="text-center py-16">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Acesso restrito</h2>
+              <p className="text-muted-foreground">Apenas jurados e administradores.</p>
+            </div>
+          );
+        }
         return (
           <Avaliacao 
             inscritos={inscritos}
@@ -78,7 +95,7 @@ const Index = () => {
     }
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
