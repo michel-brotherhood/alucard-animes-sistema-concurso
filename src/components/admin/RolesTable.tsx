@@ -14,8 +14,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, RefreshCw, Shield, Gavel } from "lucide-react";
+import { Loader2, RefreshCw, Shield, Gavel, Trash2 } from "lucide-react";
 import { CreateUserDialog } from "./CreateUserDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type AppRole = "admin" | "judge" | "viewer" | "juror";
 
