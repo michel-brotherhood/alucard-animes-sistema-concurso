@@ -100,6 +100,27 @@ export function RolesTable() {
     setBusyId(null);
   }
 
+  async function deleteUser(userId: string, email: string | null) {
+    setBusyId(`${userId}:delete`);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Usuário excluído", description: email ?? userId });
+      setUsers((prev) => prev.filter((u) => u.user_id !== userId));
+    } catch (err: any) {
+      toast({
+        title: "Erro ao excluir",
+        description: err.message ?? "Tente novamente",
+        variant: "destructive",
+      });
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
