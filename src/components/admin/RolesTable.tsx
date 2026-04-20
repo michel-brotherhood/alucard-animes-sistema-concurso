@@ -14,8 +14,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, RefreshCw, Shield, Gavel } from "lucide-react";
+import { Loader2, RefreshCw, Shield, Gavel, Trash2 } from "lucide-react";
 import { CreateUserDialog } from "./CreateUserDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type AppRole = "admin" | "judge" | "viewer" | "juror";
 
@@ -89,6 +100,27 @@ export function RolesTable() {
     setBusyId(null);
   }
 
+  async function deleteUser(userId: string, email: string | null) {
+    setBusyId(`${userId}:delete`);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Usuário excluído", description: email ?? userId });
+      setUsers((prev) => prev.filter((u) => u.user_id !== userId));
+    } catch (err: any) {
+      toast({
+        title: "Erro ao excluir",
+        description: err.message ?? "Tente novamente",
+        variant: "destructive",
+      });
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -119,8 +151,9 @@ export function RolesTable() {
             <TableRow>
               <TableHead>Usuário</TableHead>
               <TableHead>Papéis</TableHead>
-              <TableHead className="w-[140px]">Jurado</TableHead>
-              <TableHead className="w-[140px]">Admin</TableHead>
+              <TableHead className="w-[100px]">Jurado</TableHead>
+              <TableHead className="w-[100px]">Admin</TableHead>
+              <TableHead className="w-[80px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -177,6 +210,37 @@ export function RolesTable() {
                       }
                       onCheckedChange={(v) => toggleRole(u.user_id, "admin", v)}
                     />
+                  </TableCell>
+                  <TableCell>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={isSelf || busyId === `${u.user_id}:delete`}
+                          aria-label="Excluir usuário"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir usuário?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação remove permanentemente <strong>{u.email}</strong>, seus papéis e o pedido de acesso. Não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteUser(u.user_id, u.email)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               );
@@ -248,6 +312,40 @@ export function RolesTable() {
                     onCheckedChange={(v) => toggleRole(u.user_id, "admin", v)}
                   />
                 </div>
+                {!isSelf && (
+                  <div className="pt-2 border-t border-border/50">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full text-destructive border-destructive/30 hover:bg-destructive/10"
+                          disabled={busyId === `${u.user_id}:delete`}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Excluir usuário
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir usuário?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação remove permanentemente <strong>{u.email}</strong>, seus papéis e o pedido de acesso. Não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteUser(u.user_id, u.email)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                )}
               </CardContent>
             </Card>
           );
