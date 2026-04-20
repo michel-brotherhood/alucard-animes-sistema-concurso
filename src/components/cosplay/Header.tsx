@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { FileDown, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/hooks/useAuth";
 
 interface HeaderProps {
   activeView: string;
@@ -15,6 +16,7 @@ export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isAdmin, isJuror } = useAuth();
   
   const handleNavigation = (id: string) => {
     setMobileMenuOpen(false);
@@ -49,14 +51,15 @@ export function Header({ activeView, onNavigate, onExportPdf }: HeaderProps) {
 
   const isApresentacaoPage = location.pathname === "/apresentacao";
 
-  const navItems = [
-    { id: "inscricoes", label: "Inscrições", icon: "📝" },
-    { id: "apresentacao", label: "Apresentação", icon: "🎭" },
-    { id: "ranking", label: "Ranking", icon: "🏆" },
-    { id: "avaliacao", label: "Jurados", icon: "⭐" },
-    { id: "kpop", label: "K-pop", icon: "🎵" },
-    { id: "admin", label: "Admin", icon: "🔐" },
+  const allNavItems = [
+    { id: "inscricoes", label: "Inscrições", icon: "📝", show: isAdmin },
+    { id: "apresentacao", label: "Apresentação", icon: "🎭", show: true },
+    { id: "ranking", label: "Ranking", icon: "🏆", show: true },
+    { id: "avaliacao", label: "Jurados", icon: "⭐", show: isAdmin || isJuror },
+    { id: "kpop", label: "K-pop", icon: "🎵", show: true },
+    { id: "admin", label: "Admin", icon: "🔐", show: isAdmin },
   ];
+  const navItems = allNavItems.filter((i) => i.show);
 
   const NavButton = ({ item }: { item: typeof navItems[0] }) => (
     <button
