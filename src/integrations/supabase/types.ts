@@ -159,6 +159,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_set_password: {
+        Args: { _email: string; _new_password: string }
+        Returns: undefined
+      }
       approve_access_request: {
         Args: {
           _request_id: string
