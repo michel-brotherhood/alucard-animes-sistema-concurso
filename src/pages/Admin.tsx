@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { ParticipantesTable } from "@/components/admin/ParticipantesTable";
 import { NotasTable } from "@/components/admin/NotasTable";
-import { LogOut, RefreshCw, Users, Star, Home, Loader2 } from "lucide-react";
+import { RolesTable } from "@/components/admin/RolesTable";
+import { LogOut, RefreshCw, Users, Star, Home, Loader2, Shield } from "lucide-react";
 
 export default function Admin() {
   const { user, signOut, isAdmin } = useAuth();
@@ -74,6 +75,10 @@ export default function Admin() {
                   <Star className="h-4 w-4" />
                   Notas
                 </TabsTrigger>
+                <TabsTrigger value="usuarios" className="gap-2">
+                  <Shield className="h-4 w-4" />
+                  Usuários
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="participantes">
@@ -82,6 +87,10 @@ export default function Admin() {
               
               <TabsContent value="notas">
                 <NotasTable inscritos={inscritos} notas={notas} onRefresh={refresh} />
+              </TabsContent>
+
+              <TabsContent value="usuarios">
+                <RolesTable />
               </TabsContent>
             </Tabs>
           </CardContent>
