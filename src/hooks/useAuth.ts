@@ -7,6 +7,7 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isJuror, setIsJuror] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -14,14 +15,15 @@ export function useAuth() {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Check admin role with setTimeout to avoid deadlock
+
+        // Check roles with setTimeout to avoid deadlock
         if (session?.user) {
           setTimeout(() => {
-            checkAdminRole(session.user.id);
+            checkRoles(session.user.id);
           }, 0);
         } else {
           setIsAdmin(false);
+          setIsJuror(false);
         }
       }
     );
@@ -31,7 +33,7 @@ export function useAuth() {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminRole(session.user.id);
+        checkRoles(session.user.id);
       }
       setLoading(false);
     });
@@ -39,18 +41,19 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function checkAdminRole(userId: string) {
+  async function checkRoles(userId: string) {
     try {
-      const { data, error } = await supabase.rpc('has_role', {
-        _user_id: userId,
-        _role: 'admin'
-      });
-      
-      if (error) throw error;
-      setIsAdmin(!!data);
+      const [adminRes, jurorRes] = await Promise.all([
+        supabase.rpc('has_role', { _user_id: userId, _role: 'admin' }),
+        supabase.rpc('has_role', { _user_id: userId, _role: 'juror' as any }),
+      ]);
+      if (adminRes.error) throw adminRes.error;
+      setIsAdmin(!!adminRes.data);
+      setIsJuror(!!jurorRes.data);
     } catch (error) {
-      console.error('Erro ao verificar role:', error);
+      console.error('Erro ao verificar roles:', error);
       setIsAdmin(false);
+      setIsJuror(false);
     }
   }
 
@@ -58,22 +61,6 @@ export function useAuth() {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-    });
-    return { error };
-  }
-
-  async function signUp(email: string, password: string, displayName?: string) {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          display_name: displayName
-        }
-      }
     });
     return { error };
   }
@@ -88,8 +75,8 @@ export function useAuth() {
     session,
     loading,
     isAdmin,
+    isJuror,
     signIn,
-    signUp,
     signOut,
   };
 }
