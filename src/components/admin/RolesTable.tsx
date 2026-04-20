@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, RefreshCw, Shield, Gavel } from "lucide-react";
+import { CreateUserDialog } from "./CreateUserDialog";
 
 type AppRole = "admin" | "judge" | "viewer" | "juror";
 
@@ -98,14 +99,17 @@ export function RolesTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-2 flex-wrap">
         <p className="text-sm text-muted-foreground">
           {users.length} usuário(s) cadastrado(s)
         </p>
-        <Button variant="ghost" size="sm" onClick={load}>
-          <RefreshCw className="h-4 w-4 mr-1" />
-          Atualizar
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" onClick={load}>
+            <RefreshCw className="h-4 w-4 mr-1" />
+            Atualizar
+          </Button>
+          <CreateUserDialog onCreated={load} />
+        </div>
       </div>
 
       {/* Desktop */}
