@@ -66,6 +66,11 @@ export function useAuth() {
   }
 
   async function signOut() {
+    // Limpa estado local imediatamente para evitar race com redirects
+    setUser(null);
+    setSession(null);
+    setIsAdmin(false);
+    setIsJuror(false);
     const { error } = await supabase.auth.signOut();
     return { error };
   }

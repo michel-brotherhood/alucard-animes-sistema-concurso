@@ -126,6 +126,7 @@ export default function Login() {
               onClick={async () => {
                 await signOut();
                 setPendingStatus(null);
+                navigate("/ranking", { replace: true });
               }}
             >
               Sair

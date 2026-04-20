@@ -21,7 +21,7 @@ export default function Admin() {
 
   async function handleLogout() {
     await signOut();
-    navigate("/login");
+    navigate("/ranking", { replace: true });
   }
 
   if (loading) {
