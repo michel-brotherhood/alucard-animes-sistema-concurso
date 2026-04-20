@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useCosplayData } from "@/hooks/useCosplayData";
+import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/cosplay/Header";
 import { Footer } from "@/components/cosplay/Footer";
 import { Home } from "@/components/cosplay/Home";
@@ -14,6 +15,7 @@ import logo from "@/assets/logo.png";
 const Index = () => {
   const [activeView, setActiveView] = useState("home");
   const { inscritos, notas, loading, addInscrito, deleteInscrito, setNota } = useCosplayData();
+  const { isAdmin } = useAuth();
 
   const handleExportPdf = () => {
     exportPdfApresentacao(inscritos, logo);
@@ -22,6 +24,14 @@ const Index = () => {
   const renderActiveView = () => {
     switch (activeView) {
       case "inscricoes":
+        if (!isAdmin) {
+          return (
+            <div className="text-center py-16">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Acesso restrito</h2>
+              <p className="text-muted-foreground">Apenas administradores podem gerenciar inscrições.</p>
+            </div>
+          );
+        }
         return (
           <Inscricoes 
             inscritos={inscritos}
